@@ -329,34 +329,6 @@ image:
 
 ---
 
-### `frontend2/`
-
-Thư mục này có vẻ là bản frontend phụ hoặc bản test.
-
-Nếu không còn dùng, nên:
-
-- Xóa khỏi project, hoặc
-- Giữ nhưng ghi rõ là bản thử nghiệm.
-
-Nếu muốn giữ nhưng không upload lên GitHub, thêm vào `.gitignore`:
-
-```gitignore
-frontend2/
-```
-
-Nếu `frontend2` có code quan trọng, nên đổi tên rõ hơn, ví dụ:
-
-```txt
-frontend_old/
-```
-
-hoặc:
-
-```txt
-frontend_experiment/
-```
-
----
 
 ### `chroma_db/`
 
