@@ -334,125 +334,38 @@ image:
 
 Đây là dữ liệu local của ChromaDB.
 
-Không nên upload lên GitHub.
-
-Nên thêm vào `.gitignore`:
-
-```gitignore
-chroma_db/
-```
-
----
 
 ### `data/`
 
 Thư mục này có thể chứa dữ liệu local, file test hoặc cache.
 
-Nếu chứa dữ liệu runtime, không nên upload toàn bộ.
 
-Có thể thêm vào `.gitignore`:
 
-```gitignore
-data/
-```
 
-Nếu có file mẫu cần giữ, nên tạo:
 
-```txt
-data/.gitkeep
-data/example.json
-```
-
----
 
 ### `node_modules/`
 
 Đây là thư mục dependency của Node.js.
 
-Không bao giờ upload lên GitHub.
-
-Thêm vào `.gitignore`:
-
-```gitignore
-node_modules/
-```
-
-Người tải project sẽ tự cài lại bằng:
-
-```bash
-npm install
-```
-
----
 
 ### `venv/`
 
 Đây là môi trường ảo Python.
 
-Không bao giờ upload lên GitHub.
-
-Thêm vào `.gitignore`:
-
-```gitignore
-venv/
-.venv/
-```
-
-Người tải project sẽ tự tạo lại bằng:
-
-```bash
-python -m venv venv
-```
-
----
 
 ### `.env`
 
 Chứa API key và biến môi trường.
 
-Không bao giờ upload `.env`.
-
-Thêm vào `.gitignore`:
-
-```gitignore
-.env
-.env.*
-!.env.example
-```
-
-Nên tạo file `.env.example` để người khác biết cần biến gì.
 
 ---
 
 ### `aistoryadventure-8796...`
 
-File này nhiều khả năng là Firebase service account hoặc Google credentials.
+File này là Firebase service account hoặc Google credentials.
 
-Không được upload nếu nó chứa private key.
 
-Nên đổi tên local thành:
-
-```txt
-serviceAccountKey.json
-```
-
-và thêm vào `.gitignore`:
-
-```gitignore
-serviceAccountKey.json
-firebase-adminsdk*.json
-aistoryadventure-*.json
-google-credentials.json
-credentials.json
-```
-
-Sau đó tạo file mẫu:
-
-```txt
-serviceAccountKey.example.json
-```
-
----
 
 ### `requirements.txt`
 
@@ -480,111 +393,6 @@ Nếu frontend chỉ dùng HTML/CSS/JS thuần và không cần npm, vẫn có t
 
 ---
 
-## File không nên upload lên GitHub
-
-Không commit các file/thư mục sau:
-
-```txt
-.env
-.env.*
-venv/
-.venv/
-node_modules/
-chroma_db/
-data/
-__pycache__/
-*.pyc
-*.db
-*.sqlite3
-serviceAccountKey.json
-firebase-adminsdk*.json
-aistoryadventure-*.json
-google-credentials.json
-credentials.json
-```
-
----
-
-## `.gitignore` khuyến nghị
-
-Tạo file `.gitignore` ở thư mục gốc:
-
-```gitignore
-# Python
-__pycache__/
-*.py[cod]
-*.pyo
-*.pyd
-.Python
-venv/
-.venv/
-env/
-ENV/
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-
-# Logs
-*.log
-logs/
-
-# Environment variables
-.env
-.env.*
-!.env.example
-
-# Firebase / Google credentials
-serviceAccountKey.json
-firebase-adminsdk*.json
-aistoryadventure-*.json
-google-credentials.json
-credentials.json
-
-# ChromaDB / local vector database
-chroma_db/
-chroma/
-.vectorstore/
-
-# Local data / database
-data/
-*.sqlite3
-*.db
-
-# Node / frontend
-node_modules/
-dist/
-build/
-.vite/
-
-# Optional old frontend
-# frontend2/
-
-# IDE
-.vscode/
-.idea/
-
-# OS
-.DS_Store
-Thumbs.db
-```
-
-Nếu bạn muốn upload `data/example.json`, đổi phần `data/` thành:
-
-```gitignore
-data/*
-!data/example.json
-!data/.gitkeep
-```
-
----
-
-## File `.env.example`
-
-Tạo file:
-
-```txt
-.env.example
-```
 
 Nội dung mẫu:
 
@@ -606,10 +414,6 @@ FIREBASE_DATABASE_URL=your_firebase_database_url
 # App
 APP_ENV=development
 ```
-
-Không ghi key thật vào `.env.example`.
-
----
 
 ## File `serviceAccountKey.example.json`
 
@@ -927,98 +731,6 @@ All narration, prose, dialogue, descriptions, and choices visible to the player 
 
 ---
 
-## Lỗi thường gặp
-
-### Missing Authorization Token
-
-Nguyên nhân:
-
-- Chưa đăng nhập.
-- Frontend chưa gửi Firebase ID token.
-- `requestJson()` chưa gắn header Authorization.
-
-Kiểm tra request phải có:
-
-```txt
-Authorization: Bearer <firebase_id_token>
-```
-
----
-
-### Firestore Requires Index
-
-Tạo index theo link Firebase trong lỗi.
-
----
-
-### Gemini 503 UNAVAILABLE
-
-Model Gemini đang quá tải.
-
-Cách xử lý:
-
-- Chờ vài phút rồi thử lại.
-- Dùng `gemini-2.5-flash-lite`.
-- Thêm retry trong backend.
-
----
-
-### AI không trả JSON đúng format
-
-Cách xử lý:
-
-- Dùng Gemini Flash cho endpoint cần JSON.
-- Prompt ghi rõ `Return ONLY valid JSON`.
-- Backend nên có JSON repair hoặc retry.
-- Giảm temperature cho các endpoint cần structured output.
-
----
-
-### Save cũ không có choices
-
-Một số save cũ có thể chưa lưu choices.
-
-Frontend nên hiển thị:
-
-```txt
-Save cũ chưa có choices được lưu.
-```
-
-Người chơi vẫn có thể nhập custom action.
-
----
-
-## Gợi ý dọn project trước khi upload GitHub
-
-Nên giữ:
-
-```txt
-app/
-frontend/
-requirements.txt
-package.json
-package-lock.json
-README.md
-.env.example
-serviceAccountKey.example.json
-.gitignore
-```
-
-Không nên upload:
-
-```txt
-venv/
-node_modules/
-chroma_db/
-data/
-.env
-serviceAccountKey.json
-aistoryadventure-8796...
-```
-
-Nếu `frontend2/` không còn dùng, nên xóa hoặc ignore.
-
----
 
 ## Trạng thái phát triển
 
