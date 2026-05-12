@@ -1,63 +1,1072 @@
 # AI Story Adventure
 
-Bản nền tối giản: AI tự tạo thế giới, nhân vật và mở đầu; người chơi nhập hành động tự do; Firebase lưu dữ liệu gốc; ChromaDB lưu vector memory; summary giữ mạch truyện.
+AI Story Adventure là một ứng dụng web kể chuyện tương tác bằng AI.  
+Người chơi có thể tạo thế giới, xây dựng nhân vật, chơi theo lựa chọn, hoặc viết tiếp câu chuyện theo hướng tiểu thuyết tương tác.
 
-## Chạy nhanh
+Dự án hỗ trợ hai chế độ chính:
+
+- **Adventure Mode**: game phiêu lưu văn bản, tập trung vào hành động, lựa chọn nhanh và diễn biến trực tiếp.
+- **Novel Mode**: chế độ tiểu thuyết tương tác, tập trung vào văn xuôi dài, bối cảnh, nhân vật, story bible và lựa chọn dạng định hướng câu chuyện.
+
+AI sẽ viết nội dung hiển thị cho người chơi bằng **tiếng Việt**.
+
+---
+
+## Tính năng chính
+
+### Game Portal Frontend
+
+Frontend được thiết kế như một cổng game hiện đại:
+
+- Trang Home hiển thị các thế giới preset do người tạo chuẩn bị.
+- Trang Saves lưu các câu chuyện đang chơi.
+- Trang About giới thiệu dự án.
+- Modal Create cho phép chọn:
+  - Adventure Mode
+  - Novel Mode
+- Đăng nhập / đăng ký bằng Firebase Authentication.
+- Avatar người dùng sau khi đăng nhập.
+- Giao diện đọc truyện cho Novel Mode.
+- Giao diện hành động cho Adventure Mode.
+
+### Adventure Mode
+
+Adventure Mode phù hợp với lối chơi nhanh.
+
+Luồng chơi:
+
+1. Người chơi chọn Adventure Mode hoặc chọn một preset world.
+2. Nhập thông tin nhân vật.
+3. AI tạo hồ sơ thế giới và nhân vật.
+4. Người chơi bắt đầu phiêu lưu.
+5. Người chơi chọn một lựa chọn có sẵn hoặc tự nhập hành động.
+6. Câu chuyện được lưu để tiếp tục về sau.
+
+### Novel Mode
+
+Novel Mode phù hợp với trải nghiệm tiểu thuyết tương tác.
+
+Luồng chơi:
+
+1. Người chơi nhập world seed hoặc bỏ qua để AI tự tạo.
+2. AI tạo world draft.
+3. Người chơi trả lời các câu hỏi thiết lập thế giới.
+4. Người chơi nhập hồ sơ nhân vật.
+5. AI tạo foundation / novel profile / story bible.
+6. AI viết cảnh truyện bằng tiếng Việt.
+7. Người chơi chọn hướng đi tiếp theo hoặc tự nhập hướng kể chuyện.
+
+### Hệ thống Memory
+
+Backend giữ mạch truyện bằng nhiều lớp memory:
+
+- Raw messages
+- World summary
+- Character summary
+- Story summary
+- Important facts
+- Relevant memory chunks
+- Session persistence
+- Vector memory bằng ChromaDB
+
+`novel_profile` chỉ dùng để AI tham khảo khi viết truyện, không phải gameplay state hiển thị cho người chơi.
+
+---
+
+## Công nghệ sử dụng
+
+### Backend
+
+- Python
+- FastAPI
+- Pydantic
+- Firebase Admin SDK
+- ChromaDB
+- Multi-provider AI architecture
+
+### Frontend
+
+- HTML
+- CSS
+- JavaScript
+- Firebase Authentication
+- Firestore client SDK
+
+### AI Providers
+
+Dự án có thể cấu hình nhiều provider AI:
+
+- Gemini
+- OpenAI
+- Groq
+- Ollama
+- Mock provider để test
+
+Hiện tại khuyến nghị dùng:
+
+```env
+AI_PROVIDER=gemini
+TEXT_MODEL=gemini-2.5-flash
+```
+
+---
+
+## Cấu trúc thư mục hiện tại
+
+Cấu trúc hiện tại của project:
+
+```txt
+AI-Story-Adventure/
+│
+├── app/
+│   ├── main.py
+│   ├── models.py
+│   ├── prompt.py
+│   ├── routes/
+│   ├── services/
+│   ├── memory/
+│   └── providers/
+│
+├── chroma_db/
+│
+├── data/
+│
+├── frontend/
+│   ├── index.html
+│   ├── style.css
+│   ├── app.js
+│   └── assets/
+│
+├── frontend2/
+│
+├── node_modules/
+│
+├── venv/
+│
+├── .env
+├── aistoryadventure-8796...
+├── package-lock.json
+├── package.json
+├── README.md
+└── requirements.txt
+```
+
+---
+
+## Giải thích các thư mục / file
+
+### `app/`
+
+Đây là thư mục backend chính của FastAPI.
+
+Các file quan trọng:
+
+```txt
+app/main.py
+```
+
+File khởi động FastAPI app, khai báo routes và middleware.
+
+```txt
+app/models.py
+```
+
+Chứa các Pydantic model như:
+
+- Session state
+- Message
+- Choices
+- Memory chunk
+- Game request
+- Novel request
+
+```txt
+app/prompt.py
+```
+
+Chứa các hàm build prompt cho AI:
+
+- Start prompt
+- Turn prompt
+- Summary prompt
+- Memory extract prompt
+- Novel world prompt
+- Novel foundation prompt
+
+Prompt nội bộ có thể viết bằng tiếng Anh để AI hiểu cấu trúc tốt hơn, nhưng output hiển thị cho người chơi phải là tiếng Việt.
+
+```txt
+app/routes/
+```
+
+Chứa các API route.
+
+Ví dụ:
+
+- Start game
+- Continue turn
+- Load sessions
+- Novel world setup
+- Novel foundation setup
+
+```txt
+app/services/
+```
+
+Chứa logic xử lý chính:
+
+- Gọi AI provider
+- Tạo session
+- Lưu session
+- Load session
+- Xử lý memory
+- Xử lý turn gameplay
+
+```txt
+app/memory/
+```
+
+Chứa hệ thống memory:
+
+- Summary memory
+- Important facts
+- Vector retrieval
+- ChromaDB integration
+
+```txt
+app/providers/
+```
+
+Chứa các provider AI:
+
+- Gemini
+- OpenAI
+- Groq
+- Ollama
+- Mock
+
+---
+
+### `frontend/`
+
+Đây là frontend chính nên dùng.
+
+Các file quan trọng:
+
+```txt
+frontend/index.html
+```
+
+Chứa cấu trúc giao diện:
+
+- Login page
+- Register page
+- Home page
+- Saves page
+- About page
+- Create modal
+- Adventure setup
+- Novel setup
+- Foundation page
+- Gameplay page
+
+```txt
+frontend/style.css
+```
+
+Chứa toàn bộ style giao diện.
+
+Bao gồm:
+
+- Portal navbar
+- Home hero
+- Preset world cards
+- Login/Register UI
+- Adventure wizard
+- Novel reader
+- Saves page
+- About page
+- Gameplay layout
+
+```txt
+frontend/app.js
+```
+
+Chứa logic frontend:
+
+- Firebase Auth
+- Page navigation
+- Load preset worlds
+- Start Adventure Mode
+- Start Novel Mode
+- Submit turn
+- Render choices
+- Save/load sessions
+- Avatar dropdown
+- Create modal
+
+```txt
+frontend/assets/
+```
+
+Chứa ảnh nền thế giới.
+
+Ví dụ nên đặt:
+
+```txt
+frontend/assets/world-sunless-realm.png
+frontend/assets/world-memory-market.png
+frontend/assets/world-ashen-archive.png
+frontend/assets/world-hollow-sea.png
+```
+
+Trong `app.js`, ảnh được dùng kiểu:
+
+```js
+image:
+  "linear-gradient(90deg, rgba(0,0,0,.78), rgba(0,0,0,.28)), url('./assets/world-sunless-realm.png')"
+```
+
+---
+
+### `frontend2/`
+
+Thư mục này có vẻ là bản frontend phụ hoặc bản test.
+
+Nếu không còn dùng, nên:
+
+- Xóa khỏi project, hoặc
+- Giữ nhưng ghi rõ là bản thử nghiệm.
+
+Nếu muốn giữ nhưng không upload lên GitHub, thêm vào `.gitignore`:
+
+```gitignore
+frontend2/
+```
+
+Nếu `frontend2` có code quan trọng, nên đổi tên rõ hơn, ví dụ:
+
+```txt
+frontend_old/
+```
+
+hoặc:
+
+```txt
+frontend_experiment/
+```
+
+---
+
+### `chroma_db/`
+
+Đây là dữ liệu local của ChromaDB.
+
+Không nên upload lên GitHub.
+
+Nên thêm vào `.gitignore`:
+
+```gitignore
+chroma_db/
+```
+
+---
+
+### `data/`
+
+Thư mục này có thể chứa dữ liệu local, file test hoặc cache.
+
+Nếu chứa dữ liệu runtime, không nên upload toàn bộ.
+
+Có thể thêm vào `.gitignore`:
+
+```gitignore
+data/
+```
+
+Nếu có file mẫu cần giữ, nên tạo:
+
+```txt
+data/.gitkeep
+data/example.json
+```
+
+---
+
+### `node_modules/`
+
+Đây là thư mục dependency của Node.js.
+
+Không bao giờ upload lên GitHub.
+
+Thêm vào `.gitignore`:
+
+```gitignore
+node_modules/
+```
+
+Người tải project sẽ tự cài lại bằng:
 
 ```bash
-python -m venv .venv
-.venv\Scripts\activate
+npm install
+```
+
+---
+
+### `venv/`
+
+Đây là môi trường ảo Python.
+
+Không bao giờ upload lên GitHub.
+
+Thêm vào `.gitignore`:
+
+```gitignore
+venv/
+.venv/
+```
+
+Người tải project sẽ tự tạo lại bằng:
+
+```bash
+python -m venv venv
+```
+
+---
+
+### `.env`
+
+Chứa API key và biến môi trường.
+
+Không bao giờ upload `.env`.
+
+Thêm vào `.gitignore`:
+
+```gitignore
+.env
+.env.*
+!.env.example
+```
+
+Nên tạo file `.env.example` để người khác biết cần biến gì.
+
+---
+
+### `aistoryadventure-8796...`
+
+File này nhiều khả năng là Firebase service account hoặc Google credentials.
+
+Không được upload nếu nó chứa private key.
+
+Nên đổi tên local thành:
+
+```txt
+serviceAccountKey.json
+```
+
+và thêm vào `.gitignore`:
+
+```gitignore
+serviceAccountKey.json
+firebase-adminsdk*.json
+aistoryadventure-*.json
+google-credentials.json
+credentials.json
+```
+
+Sau đó tạo file mẫu:
+
+```txt
+serviceAccountKey.example.json
+```
+
+---
+
+### `requirements.txt`
+
+Chứa dependency Python.
+
+Người tải về cài bằng:
+
+```bash
 pip install -r requirements.txt
+```
+
+---
+
+### `package.json` và `package-lock.json`
+
+Chứa dependency frontend/tooling nếu bạn dùng npm.
+
+Người tải về cài bằng:
+
+```bash
+npm install
+```
+
+Nếu frontend chỉ dùng HTML/CSS/JS thuần và không cần npm, vẫn có thể giữ nếu bạn dùng Live Server hoặc package script.
+
+---
+
+## File không nên upload lên GitHub
+
+Không commit các file/thư mục sau:
+
+```txt
+.env
+.env.*
+venv/
+.venv/
+node_modules/
+chroma_db/
+data/
+__pycache__/
+*.pyc
+*.db
+*.sqlite3
+serviceAccountKey.json
+firebase-adminsdk*.json
+aistoryadventure-*.json
+google-credentials.json
+credentials.json
+```
+
+---
+
+## `.gitignore` khuyến nghị
+
+Tạo file `.gitignore` ở thư mục gốc:
+
+```gitignore
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+venv/
+.venv/
+env/
+ENV/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Logs
+*.log
+logs/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Firebase / Google credentials
+serviceAccountKey.json
+firebase-adminsdk*.json
+aistoryadventure-*.json
+google-credentials.json
+credentials.json
+
+# ChromaDB / local vector database
+chroma_db/
+chroma/
+.vectorstore/
+
+# Local data / database
+data/
+*.sqlite3
+*.db
+
+# Node / frontend
+node_modules/
+dist/
+build/
+.vite/
+
+# Optional old frontend
+# frontend2/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+```
+
+Nếu bạn muốn upload `data/example.json`, đổi phần `data/` thành:
+
+```gitignore
+data/*
+!data/example.json
+!data/.gitkeep
+```
+
+---
+
+## File `.env.example`
+
+Tạo file:
+
+```txt
+.env.example
+```
+
+Nội dung mẫu:
+
+```env
+# AI Provider
+AI_PROVIDER=gemini
+TEXT_MODEL=gemini-2.5-flash
+GEMINI_API_KEY=your_gemini_api_key_here
+
+# Optional providers
+OPENAI_API_KEY=your_openai_api_key_here
+GROQ_API_KEY=your_groq_api_key_here
+
+# Firebase
+FIREBASE_PROJECT_ID=your_firebase_project_id
+FIREBASE_STORAGE_BUCKET=your_firebase_storage_bucket
+FIREBASE_DATABASE_URL=your_firebase_database_url
+
+# App
+APP_ENV=development
+```
+
+Không ghi key thật vào `.env.example`.
+
+---
+
+## File `serviceAccountKey.example.json`
+
+Tạo file:
+
+```txt
+serviceAccountKey.example.json
+```
+
+Nội dung mẫu:
+
+```json
+{
+  "type": "service_account",
+  "project_id": "your_project_id",
+  "private_key_id": "your_private_key_id",
+  "private_key": "-----BEGIN PRIVATE KEY-----\\nYOUR_PRIVATE_KEY\\n-----END PRIVATE KEY-----\\n",
+  "client_email": "firebase-adminsdk@example.iam.gserviceaccount.com",
+  "client_id": "your_client_id",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "your_cert_url"
+}
+```
+
+Người dùng thật phải tự tải file service account từ Firebase Console.
+
+---
+
+## Cài đặt project
+
+### 1. Clone project
+
+```bash
+git clone https://github.com/your-username/ai-story-adventure.git
+cd ai-story-adventure
+```
+
+---
+
+### 2. Tạo môi trường Python
+
+Windows:
+
+```bash
+python -m venv venv
+venv\Scripts\activate
+```
+
+macOS/Linux:
+
+```bash
+python -m venv venv
+source venv/bin/activate
+```
+
+---
+
+### 3. Cài dependency Python
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+### 4. Tạo file `.env`
+
+Copy file mẫu:
+
+```bash
 copy .env.example .env
+```
+
+Hoặc trên macOS/Linux:
+
+```bash
+cp .env.example .env
+```
+
+Sau đó mở `.env` và điền API key thật.
+
+---
+
+### 5. Thêm Firebase service account
+
+Tải service account từ Firebase Console.
+
+Đặt file tại thư mục gốc project:
+
+```txt
+serviceAccountKey.json
+```
+
+Hoặc nếu code của bạn đang đọc file tên khác, đặt đúng tên theo code.
+
+Ví dụ nếu code đang đọc:
+
+```txt
+aistoryadventure-8796...
+```
+
+thì hoặc đổi tên file trong code, hoặc đổi tên file local cho khớp.
+
+Khuyến nghị đổi về:
+
+```txt
+serviceAccountKey.json
+```
+
+cho dễ hiểu.
+
+---
+
+## Chạy backend
+
+Từ thư mục gốc project:
+
+```bash
 uvicorn app.main:app --reload
 ```
 
-python -m http.server 5500
-http://localhost:5500
+Backend chạy tại:
 
-Mở `frontend/index.html` bằng trình duyệt.
-
-## API
-
-- `POST /game/start`
-- `POST /game/turn`
-- `GET /game/{session_id}`
-
-## Ghi chú cấu hình
-
-Để test trước khi cấu hình Firebase/API key, đặt:
-
-```env
-TEXT_PROVIDER=mock
-USE_LOCAL_STORE_IF_FIREBASE_MISSING=true
+```txt
+http://localhost:8000
 ```
 
-Khi dùng OpenAI:
+API docs:
 
-```env
-TEXT_PROVIDER=openai
-TEXT_MODEL=gpt-4o-mini
-OPENAI_API_KEY=...
+```txt
+http://localhost:8000/docs
 ```
 
-Khi dùng Gemini:
+Nếu `main.py` không nằm ở `app/main.py`, chỉnh lại command cho đúng.
 
-```env
-TEXT_PROVIDER=gemini
-TEXT_MODEL=gemini-2.5-flash
-GEMINI_API_KEY=...
+---
+
+## Chạy frontend
+
+Frontend chính nằm trong:
+
+```txt
+frontend/
 ```
 
-Khi dùng Ollama:
+Có thể chạy bằng VS Code Live Server.
 
-```env
-TEXT_PROVIDER=ollama
-TEXT_MODEL=llama3:latest
-OLLAMA_BASE_URL=http://127.0.0.1:11434
-```
+Hoặc dùng Python static server:
 
-Firebase dùng `FIREBASE_CREDENTIALS_PATH` hoặc `FIREBASE_SERVICE_ACCOUNT_JSON`.
-
+```bash
 cd frontend
 python -m http.server 5500
+```
+
+Mở trình duyệt:
+
+```txt
 http://localhost:5500
+```
+
+Đảm bảo trong `frontend/app.js` có API base đúng:
+
+```js
+const API_BASE = "http://localhost:8000";
+```
+
+---
+
+## Firebase Frontend Config
+
+Trong `frontend/app.js` cần có Firebase client config:
+
+```js
+const firebaseConfig = {
+  apiKey: "your_api_key",
+  authDomain: "your_project.firebaseapp.com",
+  projectId: "your_project_id",
+  storageBucket: "your_project.appspot.com",
+  messagingSenderId: "your_sender_id",
+  appId: "your_app_id"
+};
+```
+
+Firebase frontend config thường không phải secret tuyệt đối, nhưng bạn vẫn cần cấu hình Firestore Security Rules đúng.
+
+---
+
+## Firestore Index
+
+Nếu gặp lỗi:
+
+```txt
+The query requires an index.
+```
+
+hãy mở link Firebase mà lỗi cung cấp và tạo index.
+
+Index thường dùng cho sessions:
+
+```txt
+Collection: sessions
+Fields:
+- user_id ascending
+- updated_at descending
+- __name__ descending
+```
+
+Chờ đến khi index có trạng thái `Enabled`.
+
+---
+
+## Cách dùng
+
+### Adventure Mode
+
+1. Đăng nhập hoặc chơi với guest.
+2. Bấm `Create`.
+3. Chọn `Adventure Mode`.
+4. Nhập thông tin nhân vật.
+5. AI tạo world foundation.
+6. Bấm `Begin the Adventure`.
+7. Chọn hành động hoặc tự nhập hành động.
+8. Tiếp tục về sau trong `Saves`.
+
+---
+
+### Novel Mode
+
+1. Bấm `Create`.
+2. Chọn `Novel Mode`.
+3. Nhập world seed hoặc bỏ qua.
+4. AI tạo world draft.
+5. Trả lời các câu hỏi setup.
+6. Nhập hồ sơ nhân vật.
+7. AI tạo foundation / novel profile.
+8. Đọc cảnh truyện.
+9. Chọn hướng đi hoặc tự nhập hướng kể tiếp.
+
+---
+
+## Preset Worlds
+
+Preset worlds được cấu hình trong:
+
+```txt
+frontend/app.js
+```
+
+Ví dụ:
+
+```js
+const creatorWorlds = [
+  {
+    id: "memory-market",
+    title: "The Memory Market",
+    mode: "Novel",
+    description:
+      "A city where memories are bottled, traded, stolen, and used as currency.",
+    image:
+      "linear-gradient(90deg, rgba(0,0,0,.78), rgba(0,0,0,.28)), url('./assets/world-memory-market.png')",
+    worldSeed:
+      "A city where memories are bottled, traded, stolen, and used as currency..."
+  }
+];
+```
+
+Giải thích:
+
+```txt
+image     → chỉ frontend dùng để hiển thị ảnh nền
+worldSeed → gửi lên backend để AI đọc và tạo thế giới
+```
+
+---
+
+## Ảnh nền world
+
+Đặt ảnh trong:
+
+```txt
+frontend/assets/
+```
+
+Tên file khuyến nghị:
+
+```txt
+world-sunless-realm.png
+world-memory-market.png
+world-ashen-archive.png
+world-hollow-sea.png
+```
+
+Sau đó khai báo trong `creatorWorlds`:
+
+```js
+image:
+  "linear-gradient(90deg, rgba(0,0,0,.78), rgba(0,0,0,.28)), url('./assets/world-sunless-realm.png')"
+```
+
+---
+
+## AI Output
+
+Prompt nội bộ có thể viết bằng tiếng Anh để giữ format tốt hơn.
+
+Nhưng output hiển thị cho người chơi nên là tiếng Việt.
+
+Luật nên có trong prompt:
+
+```txt
+All narration, prose, dialogue, descriptions, and choices visible to the player must be written in natural Vietnamese.
+```
+
+---
+
+## Lỗi thường gặp
+
+### Missing Authorization Token
+
+Nguyên nhân:
+
+- Chưa đăng nhập.
+- Frontend chưa gửi Firebase ID token.
+- `requestJson()` chưa gắn header Authorization.
+
+Kiểm tra request phải có:
+
+```txt
+Authorization: Bearer <firebase_id_token>
+```
+
+---
+
+### Firestore Requires Index
+
+Tạo index theo link Firebase trong lỗi.
+
+---
+
+### Gemini 503 UNAVAILABLE
+
+Model Gemini đang quá tải.
+
+Cách xử lý:
+
+- Chờ vài phút rồi thử lại.
+- Dùng `gemini-2.5-flash-lite`.
+- Thêm retry trong backend.
+
+---
+
+### AI không trả JSON đúng format
+
+Cách xử lý:
+
+- Dùng Gemini Flash cho endpoint cần JSON.
+- Prompt ghi rõ `Return ONLY valid JSON`.
+- Backend nên có JSON repair hoặc retry.
+- Giảm temperature cho các endpoint cần structured output.
+
+---
+
+### Save cũ không có choices
+
+Một số save cũ có thể chưa lưu choices.
+
+Frontend nên hiển thị:
+
+```txt
+Save cũ chưa có choices được lưu.
+```
+
+Người chơi vẫn có thể nhập custom action.
+
+---
+
+## Gợi ý dọn project trước khi upload GitHub
+
+Nên giữ:
+
+```txt
+app/
+frontend/
+requirements.txt
+package.json
+package-lock.json
+README.md
+.env.example
+serviceAccountKey.example.json
+.gitignore
+```
+
+Không nên upload:
+
+```txt
+venv/
+node_modules/
+chroma_db/
+data/
+.env
+serviceAccountKey.json
+aistoryadventure-8796...
+```
+
+Nếu `frontend2/` không còn dùng, nên xóa hoặc ignore.
+
+---
+
+## Trạng thái phát triển
+
+Dự án vẫn đang được phát triển.
+
+Các tính năng có thể nâng cấp thêm:
+
+- Discover page
+- User profile page
+- Admin memory debugger
+- Token usage dashboard
+- More creator-made worlds
+- Better JSON repair for non-Gemini providers
+- Better save preview
+- More polished mobile layout
+
+---
+
+## License
+
+This project is for educational and portfolio use.
+
+You can replace this section with your intended license.
