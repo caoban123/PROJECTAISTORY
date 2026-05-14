@@ -10,13 +10,12 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAltwdGZdj6RWKKKvc1cRIXTRA8IIs-5ZE",
-  authDomain: "aistoryadventure-8796e.firebaseapp.com",
-  projectId: "aistoryadventure-8796e",
-  storageBucket: "aistoryadventure-8796e.firebasestorage.app",
-  messagingSenderId: "587433707758",
-  appId: "1:587433707758:web:2a1a36b90b9948fe7c8bff",
-  measurementId: "G-EJW5P4ELFT",
+  apiKey: "your_api_key",
+  authDomain: "your_project.firebaseapp.com",
+  projectId: "your_project_id",
+  storageBucket: "your_project.appspot.com",
+  messagingSenderId: "your_sender_id",
+  appId: "your_app_id"
 };
 
 const firebaseApp = initializeApp(firebaseConfig);
