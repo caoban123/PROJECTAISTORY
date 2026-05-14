@@ -15,7 +15,8 @@ const firebaseConfig = {
   projectId: "your_project_id",
   storageBucket: "your_project.appspot.com",
   messagingSenderId: "your_sender_id",
-  appId: "your_app_id"
+  appId: "your_app_id",
+  measurementId: "your_measureID"
 };
 
 const firebaseApp = initializeApp(firebaseConfig);
